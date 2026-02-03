@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Oreki Tool">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Oreki%20Tool%22%2C%22short_name%22%3A%22Oreki%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23050505%22%2C%22theme_color%22%3A%22%23050505%22%7D">
+    <meta name="theme-color" content="#050505">
+    <title>Oreki_Veritified</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --fg-color: #ffffff;
+            --accent-text: #00ff00;
+            --accent-color: #111111;
+            --input-bg: #222222;
+            --btn-bg: #003300;
+            --btn-hover: #004d00;
+            --btn-active: #006600;
+            --danger-bg: #660000;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--fg-color);
+            font-family: "Segoe UI", "Roboto", sans-serif;
+            margin: 0;
+            padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: filter 0.3s;
+            position: relative;
+            z-index: 1;
+            background: transparent;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.2);
+            padding-bottom: 60px; /* Prevent status bar from overlapping border */
+            margin: auto;
+        }
+
+        /* 3D RGB Border Effect */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -150%; left: -150%;
+            width: 400%; height: 400%; /* Increased size for smoother rotation */
+            background: conic-gradient(
+                #ff0000, #ffff00, #00ff00, #00ffff, #ff00ff, #ff0000
+            );
+            animation: rotate-border 4s linear infinite;
+            z-index: -3;
+        }
+        .container::after {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            background: #080808;
+            border-radius: 14px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,1);
+            z-index: -1;
+        }
+        @keyframes rotate-border {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Lightning Effect */
+        .lightning-effect {
+            position: absolute;
+            top: -150%; left: -150%;
+            width: 400%; height: 400%;
+            background: conic-gradient(
+                transparent 80%, 
+                rgba(0, 255, 255, 0.3) 90%, 
+                rgba(255, 255, 255, 0.9) 95%, 
+                transparent 100%
+            );
+            animation: rotate-lightning 1.5s linear infinite, flash-trigger 3s infinite;
+            z-index: -2;
+            pointer-events: none;
+            filter: blur(8px) brightness(2);
+        }
+        @keyframes rotate-lightning { 100% { transform: rotate(360deg); } }
+        @keyframes flash-trigger {
+            0%, 85% { opacity: 0; }
+            86%, 88%, 90% { opacity: 1; }
+            87%, 89%, 100% { opacity: 0; }
+        }
+
+        /* Section Frames */
+        .section-frame {
+            background: rgba(25, 25, 25, 0.8);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        /* Rainbow Header */
+        .header {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            flex-wrap: wrap;
+        }
+        .char { display: inline-block; }
+
+        .sub-header {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* Input Frame */
+        .input-frame {
+            /* Inherits .section-frame via HTML class addition */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid #444;
+            color: white;
+            padding: 8px;
+            font-family: "Segoe UI", "Roboto", sans-serif;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        input[type="text"]:focus {
+            outline: 1px solid var(--fg-color);
+        }
+
+        /* Toggles */
+        .mode-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(20, 20, 20, 0.6);
+            border: 2px solid rgba(0, 255, 0, 0.6); /* Thicker border */
+            border-radius: 50px; /* Pill shape like Zalo frame */
+            margin-bottom: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4), inset 0 0 10px rgba(0, 255, 0, 0.2); /* 3D Glow */
+            transition: transform 0.2s;
+        }
+        .mode-row:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.7), inset 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        /* Contact Section */
+        .contact-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 20px;
+            border-radius: 50px;
+            margin-top: 10px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.15);
+        }
+        .contact-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .contact-icon { width: 35px; height: 35px; border-radius: 8px; object-fit: cover; }
+        .contact-text { display: flex; flex-direction: column; }
+        .contact-title { font-size: 14px; font-weight: bold; color: white; }
+        .contact-sub { font-size: 12px; color: #aaa; }
+        .chat-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px; font-weight: bold; color: white; white-space: nowrap;
+        }
+        .zalo-bg { background-color: #0068ff; }
+        .mess-bg { background-color: #0084ff; }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #00ff00; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Button */
+        button {
+            background-color: var(--btn-bg);
+            color: var(--fg-color);
+            border: 1px solid var(--fg-color);
+            padding: 15px;
+            font-family: "Segoe UI", "Roboto", sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        button:hover { background-color: var(--btn-hover); }
+        button:active { background-color: var(--btn-active); color: white; }
+        button:disabled { background-color: var(--danger-bg); color: #ffcccc; cursor: not-allowed; border-color: red; }
+
+        /* Output */
+        .output-frame {
+            flex-grow: 1;
+            min-height: 300px;
+        }
+        textarea {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            background-color: #000;
+            color: var(--fg-color);
+            border: none;
+            font-family: "Consolas", monospace;
+            font-size: 14px;
+            resize: none;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        textarea:focus { outline: none; }
+
+        .status-bar {
+            font-size: 12px;
+            margin-top: 15px;
+            color: var(--accent-text);
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: none;
+        }
+        .container.blurred {
+            filter: blur(5px);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Responsive Design for Mobile */
+        @media (max-width: 680px) {
+            body {
+                padding: 15px;
+                padding-top: calc(15px + env(safe-area-inset-top));
+                padding-bottom: calc(50px + env(safe-area-inset-bottom));
+            }
+            .header {
+                font-size: 22px;
+            }
+            .sub-header {
+                font-size: 14px;
+            }
+            textarea {
+                min-height: 300px;
+                font-size: 12px;
+            }
+            button {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Audio Element (Hidden) -->
+<!-- Sử dụng nhạc nền Cyberpunk miễn phí bản quyền -->
+<audio id="bg-music" loop>
+    <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<canvas id="bg-canvas"></canvas>
+<div class="container">
+    <div class="lightning-effect"></div>
+    <div class="section-frame">
+        <div class="header" id="rainbow-header"></div>
+        
+        <!-- Zalo Contact -->
+        <div class="contact-row">
+            <div class="contact-left">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/120px-Icon_of_Zalo.svg.png" class="contact-icon" alt="Zalo">
+                <div class="contact-text">
+                    <div class="contact-title">Zalo Support</div>
+                    <div class="contact-sub">Admin Oreki</div>
+                </div>
+            </div>
+            <a href="https://zalo.me/0336514635" target="_blank" class="chat-btn zalo-bg">Chat Ngay</a>
+        </div>
+
+        <!-- Messenger Contact -->
+        <div class="contact-row">
+            <div class="contact-left">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Facebook_Messenger_logo_2020.svg" class="contact-icon" alt="Messenger">
+                <div class="contact-text">
+                    <div class="contact-title">Hỗ trợ Messenger</div>
+                    <div class="contact-sub">Admin Oreki</div>
+                </div>
+            </div>
+            <a href="https://m.me/" target="_blank" class="chat-btn mess-bg">Chat Ngay</a>
+        </div>
+    </div>
+
+    <div class="input-frame section-frame">
+        <div style="text-align: center; font-weight: bold; margin-bottom: 20px; color: #ffffff; text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 40px #00ff00; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">Check độ nhạy chuẩn Oreki</div>
+        <label>Tên thiết bị (VD: Samsung S23 Ultra; iPhone 11; Redmi Note 11;...)</label>
+        <input type="text" id="device-input" placeholder="Nhập tên máy...">
+    </div>
+
+    <div class="section-frame">
+        <label style="text-align: center; font-size: 18px; margin-bottom: 15px; text-transform: uppercase; color: #00ff00; text-shadow: 0 0 5px #00ff00;">Chọn chức năng:</label>
+        <div id="modes-container">
+            <!-- JS will inject modes here -->
+        </div>
+    </div>
+
+    <button id="analyze-btn">>>> KÍCH HOẠT AI PHÂN TÍCH <<<</button>
+
+    <div class="output-frame section-frame">
+        <textarea id="result-text" readonly></textarea>
+    </div>
+
+    <div class="status-bar" id="status-bar">System Ready. Waiting for input...</div>
+</div>
+
+<div id="loading-overlay">
+    <canvas id="loading-canvas"></canvas>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // --- CONFIGURATION ---
+    const MODES = [
+        { text: "Nhẹ Tâm (Sensitivity)", id: "light" },
+        { text: "Fix Rung (Fix Vibrate)", id: "recoil" },
+        { text: "Giảm lố (Reduce Overshoot)", id: "overshoot" },
+        { text: "Ổn Định (Stability)", id: "stable" },
+        { text: "One Shot (Shotgun/Sniper)", id: "oneshot" },
+        { text: "Tối ưu FPS (Buff Smooth)", id: "fps" },
+        { text: "Đồ họa Max (Check Graphics)", id: "graphics" }
+    ];
+
+    const VALID_BRANDS = ["iphone", "ipad", "samsung", "galaxy", "oppo", "vivo", "xiaomi", "redmi", "realme", "vsmart", "poco", "infinix", "tecno", "asus", "rog", "nubia", "sony", "lg", "google", "pixel", "huawei", "honor", "oneplus", "zte", "lenovo", "motorola", "nokia", "htc", "itel"];
+
+    // --- SEEDED RANDOM CLASS (Ported from Python logic) ---
+    class SeededRandom {
+        constructor(seedStr) {
+            this.seed = 0;
+            for (let i = 0; i < seedStr.length; i++) {
+                this.seed += seedStr.charCodeAt(i);
+            }
+        }
+        
+        // Linear Congruential Generator
+        next() {
+            this.seed = (this.seed * 9301 + 49297) % 233280;
+            return this.seed / 233280;
+        }
+
+        choice(arr) {
+            return arr[Math.floor(this.next() * arr.length)];
+        }
+
+        randint(min, max) {
+            return Math.floor(this.next() * (max - min + 1)) + min;
+        }
+    }
+
+    // --- AUDIO HANDLING ---
+    const audio = document.getElementById('bg-music');
+    audio.volume = 0.4; // 40% volume
+    audio.loop = true;
+    
+    // Try to play on first interaction
+    function playAudio() {
+        audio.play().catch(e => console.log("Audio play failed (waiting for interaction):", e));
+        document.removeEventListener('click', playAudio);
+        document.removeEventListener('touchstart', playAudio);
+    }
+    document.addEventListener('click', playAudio);
+    document.addEventListener('touchstart', playAudio);
+
+    // --- UI INITIALIZATION ---
+    // 1. Rainbow Header
+    const headerText = "[ Oreki_Veritified ]";
+    const headerEl = document.getElementById('rainbow-header');
+    const headerChars = [];
+    let headerHue = 0.0;
+
+    for (let char of headerText) {
+        let span = document.createElement('span');
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        span.className = 'char';
+        headerEl.appendChild(span);
+        headerChars.push(span);
+    }
+
+    function animateHeader() {
+        headerChars.forEach((span, i) => {
+            let h = (headerHue - (i * 0.03)) % 1.0;
+            if (h < 0) h += 1.0;
+            // HSV to RGB conversion for CSS
+            let s = 1.0, v = 1.0;
+            let r, g, b, i_h, f, p, q, t;
+            i_h = Math.floor(h * 6);
+            f = h * 6 - i_h;
+            p = v * (1 - s);
+            q = v * (1 - f * s);
+            t = v * (1 - (1 - f) * s);
+            switch (i_h % 6) {
+                case 0: r = v; g = t; b = p; break;
+                case 1: r = q; g = v; b = p; break;
+                case 2: r = p; g = v; b = t; break;
+                case 3: r = p; g = q; b = v; break;
+                case 4: r = t; g = p; b = v; break;
+                case 5: r = v; g = p; b = q; break;
+            }
+            span.style.color = `rgb(${Math.round(r*255)}, ${Math.round(g*255)}, ${Math.round(b*255)})`;
+        });
+        headerHue += 0.01;
+        if (headerHue > 1.0) headerHue -= 1.0;
+        requestAnimationFrame(animateHeader);
+    }
+    animateHeader();
+
+    // 2. Generate Mode Toggles
+    const modesContainer = document.getElementById('modes-container');
+    MODES.forEach(mode => {
+        const div = document.createElement('div');
+        div.className = 'mode-row';
+        div.innerHTML = `
+            <span>${mode.text}</span>
+            <label class="switch">
+                <input type="checkbox" id="chk-${mode.id}">
+                <span class="slider"></span>
+            </label>
+        `;
+        modesContainer.appendChild(div);
+    });
+
+    // --- LOADING SCREEN LOGIC (CANVAS) ---
+    const canvas = document.getElementById('loading-canvas');
+    const ctx = canvas.getContext('2d');
+    let animationId;
+    let loadingProgress = 0;
+    
+    // Globe Data
+    let globeLines = [];
+    let globePoints = [];
+    let globeAngle = 0.0;
+    const globeRadius = 110;
+
+    function initGlobeData() {
+        globeLines = [];
+        globePoints = [];
+        
+        // Meridians
+        for (let lon = 0; lon < 360; lon += 15) {
+            let line = [];
+            for (let lat = -90; lat <= 90; lat += 5) {
+                let phi = lat * Math.PI / 180;
+                let theta = lon * Math.PI / 180;
+                line.push({
+                    x: globeRadius * Math.cos(phi) * Math.cos(theta),
+                    y: globeRadius * Math.sin(phi),
+                    z: globeRadius * Math.cos(phi) * Math.sin(theta)
+                });
+            }
+            globeLines.push(line);
+        }
+        // Parallels
+        for (let lat = -60; lat <= 60; lat += 20) {
+            let line = [];
+            for (let lon = 0; lon <= 360; lon += 5) {
+                let phi = lat * Math.PI / 180;
+                let theta = lon * Math.PI / 180;
+                line.push({
+                    x: globeRadius * Math.cos(phi) * Math.cos(theta),
+                    y: globeRadius * Math.sin(phi),
+                    z: globeRadius * Math.cos(phi) * Math.sin(theta)
+                });
+            }
+            globeLines.push(line);
+        }
+
+        // Continents (Random dots around centers)
+        const continents = [
+            {lat: 45, lon: -100, rad: 30}, // NA
+            {lat: -20, lon: -60, rad: 25}, // SA
+            {lat: 50, lon: 10, rad: 20},   // EU
+            {lat: 10, lon: 20, rad: 30},   // AF
+            {lat: 40, lon: 90, rad: 40},   // AS
+            {lat: -25, lon: 135, rad: 20}  // AU
+        ];
+        continents.forEach(c => {
+            for(let i=0; i<120; i++) {
+                let lat = c.lat + (Math.random() * c.rad * 2 - c.rad);
+                let lon = c.lon + (Math.random() * c.rad * 2 - c.rad);
+                let phi = lat * Math.PI / 180;
+                let theta = lon * Math.PI / 180;
+                globePoints.push({
+                    x: globeRadius * Math.cos(phi) * Math.cos(theta),
+                    y: globeRadius * Math.sin(phi),
+                    z: globeRadius * Math.cos(phi) * Math.sin(theta)
+                });
+            }
+        });
+    }
+
+    // Matrix Effect Data
+    let matrixStreams = [];
+    
+    function setupMatrix() {
+        matrixStreams = [];
+        const fontSize = 12;
+        const columns = Math.floor(canvas.width / fontSize);
+        for(let i=0; i<columns; i++) {
+            matrixStreams.push({
+                x: i * fontSize,
+                y: Math.random() * -500,
+                speed: Math.floor(Math.random() * 10) + 15, // Fast speed
+                length: Math.floor(Math.random() * 20) + 10,
+                chars: Array(30).fill(0).map(() => Math.random() > 0.5 ? '1' : '0')
+            });
+        }
+    }
+
+    function animateLoading() {
+        // Resize canvas to full screen
+        if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            setupMatrix();
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const fontSize = 12;
+        ctx.font = "bold 12px Consolas";
+
+        // Draw Matrix
+        matrixStreams.forEach(stream => {
+            stream.y += stream.speed;
+            if (stream.y - stream.length * fontSize > canvas.height) {
+                stream.y = Math.random() * -200;
+            }
+            
+            for(let i=0; i<stream.length; i++) {
+                let charY = stream.y - i * fontSize;
+                if (charY > 0 && charY < canvas.height) {
+                    if (i === 0) {
+                        ctx.fillStyle = "#00ff00"; // Head
+                    } else {
+                        ctx.fillStyle = "#003300"; // Tail
+                    }
+                    // Randomly flip bits
+                    if (Math.random() > 0.95) stream.chars[i] = stream.chars[i] === '1' ? '0' : '1';
+                    ctx.fillText(stream.chars[i], stream.x, charY);
+                }
+            }
+        });
+
+        // Draw Globe
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        globeAngle += 0.02;
+        const cosA = Math.cos(globeAngle);
+        const sinA = Math.sin(globeAngle);
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#003300";
+
+        // Lines
+        globeLines.forEach(line => {
+            ctx.beginPath();
+            let first = true;
+            line.forEach(p => {
+                // Rotate Y
+                let rx = p.x * cosA - p.z * sinA;
+                let rz = p.x * sinA + p.z * cosA;
+                // Project
+                if (first) {
+                    ctx.moveTo(cx + rx, cy + p.y);
+                    first = false;
+                } else {
+                    ctx.lineTo(cx + rx, cy + p.y);
+                }
+            });
+            ctx.stroke();
+        });
+
+        // Points (Continents)
+        ctx.fillStyle = "#00ff00";
+        globePoints.forEach(p => {
+            let rx = p.x * cosA - p.z * sinA;
+            let rz = p.x * sinA + p.z * cosA;
+            if (rz > 0) { // Front facing only
+                ctx.beginPath();
+                ctx.arc(cx + rx, cy + p.y, 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // Loading Bar
+        const barWidth = 300;
+        const barHeight = 10;
+        const barX = cx - barWidth / 2;
+        const barY = cy + 140;
+
+        ctx.strokeStyle = "#00ff00";
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+        
+        const fillWidth = (loadingProgress / 100) * barWidth;
+        ctx.fillStyle = "#00ff00";
+        ctx.fillRect(barX, barY, fillWidth, barHeight);
+
+        ctx.textAlign = "center";
+        ctx.fillText(`ANALYZING DATA... ${Math.min(100, Math.floor(loadingProgress))}%`, cx, barY + 25);
+        ctx.textAlign = "start"; // Reset
+
+        animationId = requestAnimationFrame(animateLoading);
+    }
+
+    // --- MAIN LOGIC ---
+    async function startAnalysis() {
+        const deviceName = document.getElementById('device-input').value.trim();
+        
+        if (!deviceName) {
+            alert("Vui lòng nhập tên thiết bị!");
+            return;
+        }
+
+        const isBrandValid = VALID_BRANDS.some(brand => deviceName.toLowerCase().includes(brand));
+        if (!isBrandValid) {
+            alert("Thiết bị không được nhận diện hoặc không phổ biến trên thị trường!\nVui lòng nhập đúng tên dòng máy (VD: Samsung S23, iPhone 11...)");
+            return;
+        }
+
+        // Disable UI
+        const btn = document.getElementById('analyze-btn');
+        btn.disabled = true;
+        btn.style.backgroundColor = "#660000";
+        btn.style.color = "#ff0000";
+        document.getElementById('result-text').value = "";
+
+        // Show Loading
+        const overlay = document.getElementById('loading-overlay');
+        overlay.style.display = 'block';
+        document.querySelector('.container').classList.add('blurred');
+        initGlobeData();
+        setupMatrix();
+        loadingProgress = 0;
+        animateLoading();
+
+        // Simulate Processing (Async loop)
+        for (let i = 1; i <= 100; i++) {
+            loadingProgress = i;
+            let delay = 15;
+            if (i >= 40) delay = 25;
+            if (i >= 80) delay = 40;
+            await new Promise(r => setTimeout(r, delay));
+        }
+        await new Promise(r => setTimeout(r, 300)); // Pause at 100%
+
+        // Stop Loading
+        cancelAnimationFrame(animationId);
+        overlay.style.display = 'none';
+        document.querySelector('.container').classList.remove('blurred');
+
+        // Calculate & Display
+        const selectedModes = MODES.filter(m => document.getElementById(`chk-${m.id}`).checked).map(m => m.id);
+        if (selectedModes.length === 0) selectedModes.push("stable");
+
+        const config = calculateSensitivity(deviceName, selectedModes);
+        displayResult(config);
+
+        // Reset UI
+        document.getElementById('status-bar').textContent = "Analysis Complete.";
+        btn.disabled = false;
+        btn.style.backgroundColor = ""; // Reset to CSS default
+        btn.style.color = "";
+    }
+
+    function calculateSensitivity(device, modes) {
+        const rng = new SeededRandom(device.toLowerCase());
+        
+        const isIos = ['iphone', 'ipad', 'ios'].some(x => device.toLowerCase().includes(x));
+        const isHighEnd = ['pro', 'ultra', 'plus', 'max', 's2', 'rog', 'black shark'].some(x => device.toLowerCase().includes(x));
+
+        let baseDpi, dpiLabel;
+        if (isIos) {
+            baseDpi = rng.choice([31, 120]);
+            dpiLabel = "Giá trị con trỏ trượt (Sliding Cursor)";
+        } else {
+            if (modes.includes("oneshot") || modes.includes("light")) {
+                baseDpi = rng.choice([581, 600, 720, 800]);
+            } else if (modes.includes("recoil")) {
+                baseDpi = rng.choice([411, 440, 480]);
+            } else {
+                baseDpi = rng.choice([480, 500, 550]);
+            }
+            dpiLabel = "DPI (Độ rộng tối thiểu)";
+        }
+
+        let sensGeneral = rng.randint(185, 200);
+        let sensRedDot = rng.randint(175, 195);
+        let sens2x = rng.randint(165, 185);
+        let sens4x = rng.randint(155, 175);
+        let sensSniper = rng.randint(60, 80);
+        let sensLook = rng.randint(120, 160);
+        let buttonSize = rng.randint(45, 55);
+
+        let notes = [];
+        notes.push(`AI nhận diện thiết bị: ${isHighEnd ? 'High-End' : 'Standard'}. Tối ưu hóa độ trễ cảm ứng.`);
+
+        let graphicsSetting = "Thấp (Smooth)";
+        let fpsSetting = "Cao (High)";
+        let shadows = "Tắt (Off)";
+
+        if (modes.includes("light")) {
+            sensGeneral = 200;
+            sensRedDot = rng.randint(190, 200);
+            buttonSize = rng.randint(38, 45);
+            notes.push("Công thức 'Light Touch' (Ruok Style): Tối đa độ nhạy để vuốt nhẹ là lên đầu.");
+        }
+
+        if (modes.includes("recoil")) {
+            sens2x = rng.randint(130, 150);
+            sens4x = rng.randint(110, 130);
+            buttonSize = rng.randint(55, 62);
+            notes.push("Công thức 'Anti-Recoil': Giảm độ nhạy Scope, tăng kích thước nút bắn để ghìm tâm.");
+        }
+
+        if (modes.includes("overshoot")) {
+            sensGeneral = Math.floor(sensGeneral * 0.95);
+            sensRedDot = Math.floor(sensRedDot * 0.92);
+            notes.push("AI tinh chỉnh: Giảm nhẹ Red Dot (5-8%) để tránh tâm bay qua đầu địch.");
+        }
+
+        if (modes.includes("oneshot")) {
+            sensGeneral = 200; sensRedDot = 200; sens2x = 200; sens4x = 200; sensLook = 200;
+            sensSniper = rng.randint(100, 150);
+            buttonSize = rng.randint(35, 42);
+            notes.push("Công thức 'One Shot' (Raistar Style): Full độ nhạy, DPI cao để Flick Shot.");
+        }
+
+        if (modes.includes("fps")) {
+            graphicsSetting = "Thấp (Smooth)";
+            fpsSetting = "Cao/Ultra (High)";
+            shadows = "Tắt (Off)";
+            notes.push("Tối ưu hóa: Ưu tiên FPS cao nhất để giảm độ trễ input.");
+        }
+
+        if (modes.includes("graphics")) {
+            graphicsSetting = "Max (Ultra)";
+            fpsSetting = "Cao (High)";
+            shadows = "Bật (On)";
+            notes.push("Tối ưu hóa: Bật max đồ họa (Hỗ trợ nhìn địch xa).");
+        }
+
+        if (modes.includes("stable") && modes.length === 1) {
+            notes.push("Cấu hình cân bằng (Standard Competitive).");
+        }
+
+        // Clamp
+        const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+        sensGeneral = clamp(sensGeneral, 0, 200);
+        sensRedDot = clamp(sensRedDot, 0, 200);
+        sens2x = clamp(sens2x, 0, 200);
+        sens4x = clamp(sens4x, 0, 200);
+        sensSniper = clamp(sensSniper, 0, 200);
+        sensLook = clamp(sensLook, 0, 200);
+
+        // Radar Stats
+        let speedScore = rng.randint(65, 80);
+        let aimScore = rng.randint(65, 80);
+        let stabilityScore = rng.randint(65, 80);
+
+        if (modes.includes("light")) { speedScore += 15; stabilityScore -= 10; }
+        if (modes.includes("oneshot")) { speedScore += 20; aimScore -= 5; stabilityScore -= 15; }
+        if (modes.includes("recoil")) { stabilityScore += 20; aimScore += 10; speedScore -= 10; }
+        if (modes.includes("stable")) { stabilityScore += 15; aimScore += 5; }
+        if (modes.includes("overshoot")) { aimScore += 15; speedScore -= 5; }
+        if (modes.includes("fps")) { speedScore += 5; }
+
+        return {
+            device: device,
+            modes: modes.join(", ").toUpperCase(),
+            dpi: baseDpi,
+            dpiLabel: dpiLabel,
+            general: sensGeneral,
+            redDot: sensRedDot,
+            x2: sens2x,
+            x4: sens4x,
+            sniper: sensSniper,
+            look: sensLook,
+            button: buttonSize,
+            graphics: graphicsSetting,
+            fps: fpsSetting,
+            shadows: shadows,
+            note: notes.join(" + "),
+            speed: clamp(speedScore, 10, 100),
+            aim: clamp(aimScore, 10, 100),
+            stability: clamp(stabilityScore, 10, 100)
+        };
+    }
+
+    function displayResult(config) {
+        function drawBar(val) {
+            const filled = Math.floor(val / 10);
+            return "■".repeat(filled) + "□".repeat(10 - filled);
+        }
+
+        const output = `
+================================================
+   KẾT QUẢ TỐI ƯU HÓA: ${config.device.toUpperCase()}
+================================================
+
+[ THÔNG SỐ HỆ THỐNG ]
+> Chế độ: ${config.modes}
+> ${config.dpiLabel}: ${config.dpi}
+> Tốc độ con trỏ: Mức 7 (Mặc định)
+
+[ ĐỘ NHẠY FREE FIRE MAX (0-200) ]
+> Nhìn xung quanh:  ${config.general}
+> Red Dot:          ${config.redDot}
+> Ống ngắm 2x:      ${config.x2}
+> Ống ngắm 4x:      ${config.x4}
+> Ống ngắm Sniper:  ${config.sniper}
+> Nhìn:             ${config.look}
+
+[ ĐỒ HỌA & FPS ]
+> Đồ họa:           ${config.graphics}
+> FPS:              ${config.fps}
+> Bóng đổ:          ${config.shadows}
+
+[ HUD CONTROL ]
+> Kích thước nút bắn: ${config.button}%
+> Vị trí nút bắn:     Kéo thấp xuống dưới 10%
+
+[ BIỂU ĐỒ CHỈ SỐ (RADAR) ]
+SPEED     : ${drawBar(config.speed)} (${config.speed})
+AIM       : ${drawBar(config.aim)} (${config.aim})
+STABILITY : ${drawBar(config.stability)} (${config.stability})
+
+[ LỜI KHUYÊN TỪ OREKI ]
+> ${config.note}
+
+Mua file ib zalo 0336514635
+================================================
+Generated by Oreki_Veritified
+`;
+        document.getElementById('result-text').value = output.trim();
+    }
+
+    // --- BACKGROUND ANIMATION (Thicker & Brighter) ---
+    const bgCanvas = document.getElementById('bg-canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let bgParticles = [];
+    
+    // Mouse Interaction
+    let mouse = { x: null, y: null };
+    window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+    window.addEventListener('touchmove', (e) => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }, {passive: true});
+
+    function resizeBg() {
+        bgCanvas.width = window.innerWidth;
+        bgCanvas.height = window.innerHeight;
+        initBg();
+    }
+    window.addEventListener('resize', resizeBg);
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * bgCanvas.width;
+            this.y = Math.random() * bgCanvas.height;
+            this.vx = (Math.random() - 0.5) * 1.5;
+            this.vy = (Math.random() - 0.5) * 1.5;
+            this.size = Math.random() * 2 + 1;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0 || this.x > bgCanvas.width) this.vx *= -1;
+            if (this.y < 0 || this.y > bgCanvas.height) this.vy *= -1;
+        }
+    }
+
+    function initBg() {
+        bgParticles = [];
+        // High density: 1 particle per 3000px
+        const count = Math.floor((window.innerWidth * window.innerHeight) / 3000); 
+        for (let i = 0; i < count; i++) bgParticles.push(new Particle());
+    }
+
+    function animateBg() {
+        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+        
+        for (let i = 0; i < bgParticles.length; i++) {
+            let p = bgParticles[i];
+            p.update();
+            
+            // Draw Dot
+            bgCtx.fillStyle = "rgba(0, 255, 0, 0.6)";
+            bgCtx.beginPath(); bgCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); bgCtx.fill();
+            
+            // Draw Lines
+            for (let j = i + 1; j < bgParticles.length; j++) {
+                let p2 = bgParticles[j];
+                let d = (p.x - p2.x)**2 + (p.y - p2.y)**2;
+                if (d < 10000) { // Connect closer particles
+                    bgCtx.strokeStyle = `rgba(0, 255, 0, ${0.5 * (1 - d/10000)})`;
+                    bgCtx.lineWidth = 0.5;
+                    bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke();
+                }
+            }
+            // Mouse Connect
+            if (mouse.x != null) {
+                let d = (p.x - mouse.x)**2 + (p.y - mouse.y)**2;
+                if (d < 20000) {
+                    bgCtx.strokeStyle = `rgba(0, 255, 0, ${0.8 * (1 - d/20000)})`;
+                    bgCtx.lineWidth = 0.8;
+                    bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(mouse.x, mouse.y); bgCtx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animateBg);
+    }
+    resizeBg();
+    animateBg();
+
+    document.getElementById('analyze-btn').addEventListener('click', startAnalysis);
+});
+</script>
+
+</body>
+</html>
